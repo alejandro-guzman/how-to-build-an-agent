@@ -49,3 +49,5 @@ Once the agent is running, you can interact with it through natural language:
 ## Credits
 
 This project follows the tutorial at: https://ampcode.com/how-to-build-an-agent
+
+> This README was created with this AI Agent
