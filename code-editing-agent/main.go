@@ -1,3 +1,5 @@
+// Package main implements a conversational agent that uses the Anthropic Claude API
+// to process user inputs and execute various file operations.
 package main
 
 import (
@@ -11,6 +13,8 @@ import (
 	"github.com/invopop/jsonschema"
 )
 
+// ToolDefinition represents a tool that can be used by the agent to perform specific operations.
+// It contains the tool's name, description, input schema, and the function to execute.
 type ToolDefinition struct {
 	Name        string                         `json:"name"`
 	Description string                         `json:"description"`
@@ -18,6 +22,8 @@ type ToolDefinition struct {
 	Function    func(input json.RawMessage) (string, error)
 }
 
+// GenerateSchema creates an Anthropic tool input schema from a Go struct type.
+// It uses reflection to generate a JSON schema that describes the struct fields.
 func GenerateSchema[T any]() anthropic.ToolInputSchemaParam {
 	reflector := jsonschema.Reflector{
 		AllowAdditionalProperties: false,
@@ -31,12 +37,16 @@ func GenerateSchema[T any]() anthropic.ToolInputSchemaParam {
 	}
 }
 
+// Agent represents a conversational agent that can process user messages
+// and execute tools based on Claude's responses.
 type Agent struct {
 	client         *anthropic.Client
 	getUserMessage func() (string, bool)
 	tools          []ToolDefinition
 }
 
+// NewAgent creates a new Agent with the given Anthropic client, function to get user messages,
+// and a list of tool definitions.
 func NewAgent(client *anthropic.Client, getUserMessage func() (string, bool), tools []ToolDefinition) *Agent {
 	return &Agent{
 		client,
@@ -45,6 +55,8 @@ func NewAgent(client *anthropic.Client, getUserMessage func() (string, bool), to
 	}
 }
 
+// runInference sends the current conversation to Claude and gets a response.
+// It converts the agent's tools to the format expected by the Anthropic API.
 func (a *Agent) runInference(ctx context.Context, conversation []anthropic.MessageParam) (*anthropic.Message, error) {
 	anthropicTools := []anthropic.ToolUnionParam{}
 	for _, tool := range a.tools {
@@ -67,6 +79,8 @@ func (a *Agent) runInference(ctx context.Context, conversation []anthropic.Messa
 	return message, err
 }
 
+// Run starts the agent's main loop, handling user input and Claude's responses.
+// It processes tool calls from Claude and adds the results back to the conversation.
 func (a *Agent) Run(ctx context.Context) error {
 	conversation := []anthropic.MessageParam{}
 
@@ -113,6 +127,8 @@ func (a *Agent) Run(ctx context.Context) error {
 	return nil
 }
 
+// executeTool finds and executes a tool by name with the given input.
+// It returns a tool result block that can be sent back to Claude.
 func (a *Agent) executeTool(id string, name string, input json.RawMessage) anthropic.ContentBlockParamUnion {
 	var toolDef ToolDefinition
 	var found bool
@@ -135,6 +151,8 @@ func (a *Agent) executeTool(id string, name string, input json.RawMessage) anthr
 	return anthropic.NewToolResultBlock(id, response, false)
 }
 
+// main initializes the Anthropic client, sets up the agent with tools,
+// and starts the conversation loop.
 func main() {
 	client := anthropic.NewClient()
 

@@ -1,3 +1,4 @@
+// Package main implements file editing functionality.
 package main
 
 import (
@@ -8,6 +9,8 @@ import (
 	"strings"
 )
 
+// EditFileDefinition defines the edit_file tool which can modify text files
+// by replacing one string with another or create new files.
 var EditFileDefinition = ToolDefinition{
 	Name: "edit_file",
 	Description: `Make edits to a text file.
@@ -19,14 +22,18 @@ If the file specified with path does not exists, it will be created.`,
 	Function:    EditFile,
 }
 
+// EditFileInput defines the parameters needed for the edit_file operation.
 type EditFileInput struct {
 	Path   string `json:"path" jsonschema_description:"The path of the file to edit"`
 	OldStr string `json:"old_str" jsonschema_description:"Text to search for - must match exactly and must only have on match exactly."`
 	NewStr string `json:"new_str" jsonschema_description:"Text to replace old_str with."`
 }
 
+// EditFileInputSchema is the JSON schema for the edit_file tool's input parameters.
 var EditFileInputSchema = GenerateSchema[EditFileInput]()
 
+// EditFile replaces all occurrences of a given string in a file with a new string.
+// If the file doesn't exist and old_str is empty, it creates a new file with new_str as content.
 func EditFile(input json.RawMessage) (string, error) {
 	editFileInput := EditFileInput{}
 	err := json.Unmarshal(input, &editFileInput)
@@ -57,6 +64,8 @@ func EditFile(input json.RawMessage) (string, error) {
 	return "ok", nil
 }
 
+// createNewFile creates a new file with the given content.
+// It creates any necessary directories in the file path.
 func createNewFile(filePath, content string) (string, error) {
 	dir := path.Dir(filePath)
 	if dir != "." {

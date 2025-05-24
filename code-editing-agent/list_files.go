@@ -1,3 +1,4 @@
+// Package main implements directory listing functionality.
 package main
 
 import (
@@ -6,6 +7,8 @@ import (
 	"path/filepath"
 )
 
+// ListFilesDefinition defines the list_files tool which can list files and directories
+// at a given path.
 var ListFilesDefinition = ToolDefinition{
 	Name:        "list_files",
 	Description: "List files and directories at a given path. If no path is provided, list files in the current directory.",
@@ -13,12 +16,16 @@ var ListFilesDefinition = ToolDefinition{
 	Function:    ListFiles,
 }
 
+// ListFilesInput defines the parameters needed for the list_files operation.
 type ListFilesInput struct {
 	Path string `json:"path,omitempty" jsonschema_description:"Optional relative path to list files from. Defaults to current directory if not provided."`
 }
 
+// ListFilesInputSchema is the JSON schema for the list_files tool's input parameters.
 var ListFilesInputSchema = GenerateSchema[ListFilesInput]()
 
+// ListFiles recursively lists all files and directories at the given path.
+// If no path is provided, it lists files in the current directory.
 func ListFiles(input json.RawMessage) (string, error) {
 	listFilesInput := ListFilesInput{}
 	err := json.Unmarshal(input, &listFilesInput)
